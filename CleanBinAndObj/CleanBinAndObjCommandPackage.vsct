@@ -6,7 +6,7 @@
 
   <Commands package="guidCleanBinAndObjCommandPackage">
     <Groups>
-      <Group guid="guidCleanBinAndObjCommandPackageCmdSet" id="SolutionNodeMenuGroup" priority="0x0600">
+      <Group guid="guidCleanBinAndObjCommandPackageCmdSet" id="SolutionNodeMenuGroup" priority="0xF000">
         <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_SOLNNODE"/>
       </Group>
     </Groups>

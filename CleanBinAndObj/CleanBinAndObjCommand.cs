@@ -86,12 +86,18 @@ namespace CleanBinAndObj
 
             var directoriesToClean = binDirectories.Concat(objDirectories).OrderBy(x => x).ToArray();
 
+            uint cookie = 0;
             WriteToOutput($"Starting... Directories to clean: {directoriesToClean.Length}");
             _vsOutputWindowPane.Activate(); // Brings this pane into view
+            StatusBar.Progress(ref cookie, 1, string.Empty, 0, (uint) directoriesToClean.Length);
 
-            foreach (var directoryToClean in directoriesToClean)
+            for (uint index = 0; index < directoriesToClean.Length; index++)
             {
-                WriteToOutput($"Cleaning {directoryToClean}");
+                var directoryToClean = directoriesToClean[index];
+                var message = $"Cleaning {directoryToClean}";
+                WriteToOutput(message);
+                StatusBar.Progress(ref cookie, 1, "", index, (uint)directoriesToClean.Length);
+                StatusBar.SetText(message);
                 var di = new DirectoryInfo(directoryToClean);
                 foreach (var file in di.EnumerateFiles()) file.Delete();
 
@@ -99,11 +105,33 @@ namespace CleanBinAndObj
             }
 
             WriteToOutput("Finished");
+            // Clear the progress bar.
+            StatusBar.Progress(ref cookie, 0, string.Empty, 0, 0);
+            StatusBar.FreezeOutput(0);
+            StatusBar.SetText("Cleaned bin and obj");
         }
 
-        private static void WriteToOutput(string message)
+        private void WriteToOutput(string message)
         {
             _vsOutputWindowPane.OutputString($"{DateTime.Now:HH:mm:ss.ffff}: {message}{Environment.NewLine}");
+        }
+        private IVsStatusbar _bar;
+
+        /// <summary>
+        /// Gets the status bar.
+        /// </summary>
+        /// <value>The status bar.</value>
+        private IVsStatusbar StatusBar
+        {
+            get
+            {
+                if (_bar == null)
+                {
+                    _bar = ServiceProvider.GetService(typeof(SVsStatusbar)) as IVsStatusbar;
+                }
+
+                return _bar;
+            }
         }
     }
 }
