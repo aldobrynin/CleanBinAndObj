@@ -31,7 +31,7 @@ namespace CleanBinAndObj
         /// <summary>
         ///     VS Package that provides this command, not null.
         /// </summary>
-        private readonly Package package;
+        private readonly Package _package;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="CleanBinAndObjCommand" /> class.
@@ -40,7 +40,7 @@ namespace CleanBinAndObj
         /// <param name="package">Owner package, not null.</param>
         private CleanBinAndObjCommand(Package package)
         {
-            this.package = package ?? throw new ArgumentNullException(nameof(package));
+            this._package = package ?? throw new ArgumentNullException(nameof(package));
 
             if (ServiceProvider.GetService(typeof(IMenuCommandService)) is OleMenuCommandService commandService)
             {
@@ -50,7 +50,7 @@ namespace CleanBinAndObj
 
                 var outWindow = Package.GetGlobalService(typeof(SVsOutputWindow)) as IVsOutputWindow;
                 var paneGuid = new Guid("98BD962F-305C-4D95-9687-A8477D16D6B2");
-                const string customTitle = "Clean bin and obj";
+                const string customTitle = "Clean Bin & Obj";
                 outWindow.CreatePane(ref paneGuid, customTitle, 1, 1);
                 outWindow.GetPane(ref paneGuid, out _vsOutputWindowPane);
             }
@@ -64,7 +64,7 @@ namespace CleanBinAndObj
         /// <summary>
         ///     Gets the service provider from the owner package.
         /// </summary>
-        private IServiceProvider ServiceProvider => package;
+        private IServiceProvider ServiceProvider => _package;
 
         /// <summary>
         ///     Initializes the singleton instance of the command.
@@ -96,8 +96,6 @@ namespace CleanBinAndObj
                 foreach (var file in di.EnumerateFiles()) file.Delete();
 
                 foreach (var dir in di.EnumerateDirectories()) dir.Delete(true);
-
-                WriteToOutput($"Cleaned  {directoryToClean}");
             }
 
             WriteToOutput("Finished");
