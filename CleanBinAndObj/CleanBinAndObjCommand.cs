@@ -3,6 +3,7 @@ using System.ComponentModel.Design;
 using System.IO;
 using System.Linq;
 using EnvDTE;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 
@@ -41,18 +42,18 @@ namespace CleanBinAndObj
         private CleanBinAndObjCommand(Package package)
         {
             this._package = package ?? throw new ArgumentNullException(nameof(package));
-
+            
             if (ServiceProvider.GetService(typeof(IMenuCommandService)) is OleMenuCommandService commandService)
             {
                 var menuCommandId = new CommandID(CommandSet, CommandId);
                 var menuItem = new MenuCommand(CleanBinAndObj, menuCommandId);
                 commandService.AddCommand(menuItem);
 
-                var outWindow = Package.GetGlobalService(typeof(SVsOutputWindow)) as IVsOutputWindow;
-                var paneGuid = new Guid("98BD962F-305C-4D95-9687-A8477D16D6B2");
-                const string customTitle = "Clean Bin & Obj";
-                outWindow.CreatePane(ref paneGuid, customTitle, 1, 1);
-                outWindow.GetPane(ref paneGuid, out _vsOutputWindowPane);
+                var outWindow = (IVsOutputWindow) Package.GetGlobalService(typeof(SVsOutputWindow));
+                var generalPaneGuid = VSConstants.GUID_BuildOutputWindowPane; // P.S. There's also the GUID_OutWindowDebugPane available.
+                outWindow.GetPane(ref generalPaneGuid, out _vsOutputWindowPane);
+                _vsOutputWindowPane.Activate(); // Brings this pane into view
+
             }
         }
 
@@ -88,7 +89,6 @@ namespace CleanBinAndObj
 
             uint cookie = 0;
             WriteToOutput($"Starting... Directories to clean: {directoriesToClean.Length}");
-            _vsOutputWindowPane.Activate(); // Brings this pane into view
             StatusBar.Progress(ref cookie, 1, string.Empty, 0, (uint) directoriesToClean.Length);
 
             for (uint index = 0; index < directoriesToClean.Length; index++)
