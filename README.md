@@ -8,7 +8,8 @@ or get the [CI build](http://vsixgallery.com/extension/CleanBinAndObj.1feecc71-a
 
 ---------------------------------------
 
-Cleans all /bin and /obj directories in solution
+Visual Studio extension for easy clean all bin and obj directories in solution
+
 
 See the [change log](CHANGELOG.md) for changes and road map.
 
