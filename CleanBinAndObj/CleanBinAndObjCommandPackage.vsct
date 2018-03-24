@@ -5,28 +5,25 @@
   <Extern href="vsshlids.h"/>
 
   <Commands package="guidCleanBinAndObjCommandPackage">
-    <Groups>
-      <Group guid="guidCleanBinAndObjCommandPackageCmdSet" id="SolutionNodeMenuGroup" priority="0xF000">
-        <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_SOLNNODE"/>
-      </Group>
-    </Groups>
-
     <Buttons>
       <Button guid="guidCleanBinAndObjCommandPackageCmdSet" id="CleanBinAndObjCommandId" priority="0xF000" type="Button">
-        <Parent guid="guidCleanBinAndObjCommandPackageCmdSet" id="SolutionNodeMenuGroup" />
+        <Parent guid="guidSHLMainMenu" id="IDG_VS_BUILD_SOLUTION"/>
+        <CommandFlag>DynamicItemStart</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
-          <ButtonText>Clean Bin and Obj</ButtonText>
+          <ButtonText>Clean Bin&amp;Obj</ButtonText>
         </Strings>
       </Button>
     </Buttons>
   </Commands>
-
+  <VisibilityConstraints>
+    <VisibilityItem guid="guidCleanBinAndObjCommandPackageCmdSet" id="CleanBinAndObjCommandId" context="UICONTEXT_SolutionExists"/>
+  </VisibilityConstraints>
   <Symbols>
-    <GuidSymbol name="guidCleanBinAndObjCommandPackage" value="{5ea478a7-93f3-4cef-982f-0be41fea1173}" />
+    <GuidSymbol name="guidCleanBinAndObjCommandPackage" value="{5ea478a7-93f3-4cef-982f-0be41fea1173}"/>
 
     <GuidSymbol name="guidCleanBinAndObjCommandPackageCmdSet" value="{58cab930-ec55-4b8b-876a-c6208cc246c4}">
-      <IDSymbol name="SolutionNodeMenuGroup" value="0x1020" />
-      <IDSymbol name="CleanBinAndObjCommandId" value="0x0100" />
+      <IDSymbol name="CleanBinAndObjCommandId" value="0x0100"/>
     </GuidSymbol>
   </Symbols>
 </CommandTable>
