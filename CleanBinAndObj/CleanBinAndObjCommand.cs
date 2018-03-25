@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.Design;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using EnvDTE;
@@ -81,7 +82,7 @@ namespace CleanBinAndObj
             var dte = (DTE) ServiceProvider.GetService(typeof(DTE));
             var solutionFullName = dte.Solution.FullName;
             var solutionRootPath = Path.GetDirectoryName(solutionFullName);
-
+            var sw = new Stopwatch();
             var binDirectories = Directory.EnumerateDirectories(solutionRootPath, "bin", SearchOption.AllDirectories);
             var objDirectories = Directory.EnumerateDirectories(solutionRootPath, "obj", SearchOption.AllDirectories);
 
@@ -90,7 +91,7 @@ namespace CleanBinAndObj
             uint cookie = 0;
             WriteToOutput($"Starting... Directories to clean: {directoriesToClean.Length}");
             StatusBar.Progress(ref cookie, 1, string.Empty, 0, (uint) directoriesToClean.Length);
-
+            sw.Start();
             for (uint index = 0; index < directoriesToClean.Length; index++)
             {
                 var directoryToClean = directoriesToClean[index];
@@ -103,8 +104,9 @@ namespace CleanBinAndObj
 
                 foreach (var dir in di.EnumerateDirectories()) dir.Delete(true);
             }
-
-            WriteToOutput("Finished");
+            sw.Stop();
+            
+            WriteToOutput($@"Finished. Process took {sw.Elapsed:mm\:ss\.ffff}");
             // Clear the progress bar.
             StatusBar.Progress(ref cookie, 0, string.Empty, 0, 0);
             StatusBar.FreezeOutput(0);
