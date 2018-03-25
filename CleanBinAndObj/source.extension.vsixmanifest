@@ -1,12 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="CleanBinAndObj.1feecc71-ac82-4552-9efb-aaf691caa6ef" Version="1.0.15" Language="en-US" Publisher="Alexander Dobrynin" />
+        <Identity Id="CleanBinAndObj.1feecc71-ac82-4552-9efb-aaf691caa6ef" Version="1.0" Language="en-US" Publisher="Alexander Dobrynin" />
         <DisplayName>CleanBinAndObj</DisplayName>
         <Description xml:space="preserve">Cleans all /bin and /obj directories in solution</Description>
-        <MoreInfo>https://github.com/aldobrynin/CleanBinAndObj/</MoreInfo>
-        <License>https://github.com/aldobrynin/CleanBinAndObj/blob/master/LICENSE</License>
-        <Icon>Icon.png</Icon>
         <Tags>clean, cleanup, bin, obj</Tags>
     </Metadata>
     <Installation>
