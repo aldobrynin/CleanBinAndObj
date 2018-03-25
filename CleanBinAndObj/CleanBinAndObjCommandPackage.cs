@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+using EnvDTE;
+using EnvDTE80;
 using Microsoft.VisualStudio.Shell;
 
 namespace CleanBinAndObj
@@ -52,7 +54,9 @@ namespace CleanBinAndObj
         /// </summary>
         protected override void Initialize()
         {
-            CleanBinAndObjCommand.Initialize(this);
+            var dte = GetService(typeof(DTE)) as DTE2;
+
+            CleanBinAndObjCommand.Initialize(this, dte);
             base.Initialize();
         }
 

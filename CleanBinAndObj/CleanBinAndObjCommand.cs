@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using EnvDTE;
+using EnvDTE80;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -30,20 +33,28 @@ namespace CleanBinAndObj
         /// </summary>
         private static IVsOutputWindowPane _vsOutputWindowPane;
 
+        private readonly DTE2 _dte;
+
         /// <summary>
         ///     VS Package that provides this command, not null.
         /// </summary>
         private readonly Package _package;
+
+        private readonly string[] _subdirectoriesToClean = {"bin", "obj"};
+
+        private IVsStatusbar _bar;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="CleanBinAndObjCommand" /> class.
         ///     Adds our command handlers for menu (commands must exist in the command table file)
         /// </summary>
         /// <param name="package">Owner package, not null.</param>
-        private CleanBinAndObjCommand(Package package)
+        /// <param name="dte2"></param>
+        private CleanBinAndObjCommand(Package package, DTE2 dte2)
         {
-            this._package = package ?? throw new ArgumentNullException(nameof(package));
-            
+            _package = package ?? throw new ArgumentNullException(nameof(package));
+            _dte = dte2;
+
             if (ServiceProvider.GetService(typeof(IMenuCommandService)) is OleMenuCommandService commandService)
             {
                 var menuCommandId = new CommandID(CommandSet, CommandId);
@@ -51,10 +62,10 @@ namespace CleanBinAndObj
                 commandService.AddCommand(menuItem);
 
                 var outWindow = (IVsOutputWindow) Package.GetGlobalService(typeof(SVsOutputWindow));
-                var generalPaneGuid = VSConstants.GUID_BuildOutputWindowPane; // P.S. There's also the GUID_OutWindowDebugPane available.
+                var generalPaneGuid =
+                    VSConstants.GUID_BuildOutputWindowPane; // P.S. There's also the GUID_OutWindowDebugPane available.
                 outWindow.GetPane(ref generalPaneGuid, out _vsOutputWindowPane);
                 _vsOutputWindowPane.Activate(); // Brings this pane into view
-
             }
         }
 
@@ -69,43 +80,42 @@ namespace CleanBinAndObj
         private IServiceProvider ServiceProvider => _package;
 
         /// <summary>
+        ///     Gets the status bar.
+        /// </summary>
+        /// <value>The status bar.</value>
+        private IVsStatusbar StatusBar => _bar ?? (_bar = ServiceProvider.GetService(typeof(SVsStatusbar)) as IVsStatusbar);
+
+        /// <summary>
         ///     Initializes the singleton instance of the command.
         /// </summary>
         /// <param name="package">Owner package, not null.</param>
-        public static void Initialize(Package package)
+        /// <param name="dte"></param>
+        public static void Initialize(Package package, DTE2 dte)
         {
-            Instance = new CleanBinAndObjCommand(package);
+            Instance = new CleanBinAndObjCommand(package, dte);
         }
 
         private void CleanBinAndObj(object sender, EventArgs e)
         {
-            var dte = (DTE) ServiceProvider.GetService(typeof(DTE));
-            var solutionFullName = dte.Solution.FullName;
-            var solutionRootPath = Path.GetDirectoryName(solutionFullName);
             var sw = new Stopwatch();
-            var binDirectories = Directory.EnumerateDirectories(solutionRootPath, "bin", SearchOption.AllDirectories);
-            var objDirectories = Directory.EnumerateDirectories(solutionRootPath, "obj", SearchOption.AllDirectories);
-
-            var directoriesToClean = binDirectories.Concat(objDirectories).OrderBy(x => x).ToArray();
-
+            var solutionProjects = GetAllProjects();
+            _vsOutputWindowPane.Clear();
+            WriteToOutput($"Starting... Projects to clean: {solutionProjects.Length}");
             uint cookie = 0;
-            WriteToOutput($"Starting... Directories to clean: {directoriesToClean.Length}");
-            StatusBar.Progress(ref cookie, 1, string.Empty, 0, (uint) directoriesToClean.Length);
+            StatusBar.Progress(ref cookie, 1, string.Empty, 0, (uint) solutionProjects.Length);
             sw.Start();
-            for (uint index = 0; index < directoriesToClean.Length; index++)
+            for (uint index = 0; index < solutionProjects.Length; index++)
             {
-                var directoryToClean = directoriesToClean[index];
-                var message = $"Cleaning {directoryToClean}";
+                var project = solutionProjects[index];
+                var projectRootPath = GetProjectRootFolder(project);
+                var message = $"Cleaning {project.UniqueName}";
                 WriteToOutput(message);
-                StatusBar.Progress(ref cookie, 1, "", index, (uint)directoriesToClean.Length);
+                StatusBar.Progress(ref cookie, 1, string.Empty, index, (uint) solutionProjects.Length);
                 StatusBar.SetText(message);
-                var di = new DirectoryInfo(directoryToClean);
-                foreach (var file in di.EnumerateFiles()) file.Delete();
-
-                foreach (var dir in di.EnumerateDirectories()) dir.Delete(true);
+                CleanDirectory(projectRootPath);
             }
+
             sw.Stop();
-            
             WriteToOutput($@"Finished. Process took {sw.Elapsed:mm\:ss\.ffff}");
             // Clear the progress bar.
             StatusBar.Progress(ref cookie, 0, string.Empty, 0, 0);
@@ -113,27 +123,115 @@ namespace CleanBinAndObj
             StatusBar.SetText("Cleaned bin and obj");
         }
 
+        private void CleanDirectory(string directoryPath)
+        {
+            if (directoryPath == null)
+                return;
+
+            try
+            {
+                foreach (var di in _subdirectoriesToClean.Select(x => Path.Combine(directoryPath, x))
+                    .Where(Directory.Exists)
+                    .Select(x => new DirectoryInfo(x)))
+                {
+                    foreach (var file in di.EnumerateFiles())
+                    {
+                        file.Delete();
+                    }
+
+                    foreach (var dir in di.EnumerateDirectories())
+                    {
+                        dir.Delete(true);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+            }
+        }
+
+        private Project[] GetAllProjects()
+        {
+            return _dte.Solution.Projects
+                .Cast<Project>()
+                .SelectMany(GetChildProjects)
+                .Union(_dte.Solution.Projects.Cast<Project>())
+                .Where(ProjectFullNameNotEmpty)
+                .OrderBy(x => x.UniqueName)
+                .ToArray();
+        }
+
+        private static bool ProjectFullNameNotEmpty(Project p)
+        {
+            try
+            {
+                return !string.IsNullOrEmpty(p.FullName);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static IEnumerable<Project> GetChildProjects(Project parent)
+        {
+            try
+            {
+                if (parent.Kind != ProjectKinds.vsProjectKindSolutionFolder && parent.Collection == null) // Unloaded
+                    return Enumerable.Empty<Project>();
+
+                if (string.IsNullOrEmpty(parent.FullName) == false)
+                    return Enumerable.Repeat(parent, 1);
+            }
+            catch (COMException)
+            {
+                return Enumerable.Empty<Project>();
+            }
+
+            return parent.ProjectItems
+                .Cast<ProjectItem>()
+                .Where(p => p.SubProject != null)
+                .SelectMany(p => GetChildProjects(p.SubProject));
+        }
+
+        private static string GetProjectRootFolder(Project project)
+        {
+            if (string.IsNullOrEmpty(project.FullName))
+                return null;
+
+            string fullPath;
+
+            try
+            {
+                fullPath = project.Properties.Item("FullPath").Value as string;
+            }
+            catch (ArgumentException)
+            {
+                try
+                {
+                    // MFC projects don't have FullPath, and there seems to be no way to query existence
+                    fullPath = project.Properties.Item("ProjectDirectory").Value as string;
+                }
+                catch (ArgumentException)
+                {
+                    // Installer projects have a ProjectPath.
+                    fullPath = project.Properties.Item("ProjectPath").Value as string;
+                }
+            }
+
+            if (string.IsNullOrEmpty(fullPath))
+                return File.Exists(project.FullName) ? Path.GetDirectoryName(project.FullName) : null;
+
+            if (Directory.Exists(fullPath))
+                return fullPath;
+
+            return File.Exists(fullPath) ? Path.GetDirectoryName(fullPath) : null;
+        }
+
         private void WriteToOutput(string message)
         {
             _vsOutputWindowPane.OutputString($"{DateTime.Now:HH:mm:ss.ffff}: {message}{Environment.NewLine}");
-        }
-        private IVsStatusbar _bar;
-
-        /// <summary>
-        /// Gets the status bar.
-        /// </summary>
-        /// <value>The status bar.</value>
-        private IVsStatusbar StatusBar
-        {
-            get
-            {
-                if (_bar == null)
-                {
-                    _bar = ServiceProvider.GetService(typeof(SVsStatusbar)) as IVsStatusbar;
-                }
-
-                return _bar;
-            }
         }
     }
 }
