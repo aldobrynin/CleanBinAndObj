@@ -54,6 +54,7 @@ namespace CleanBinAndObj
         /// </summary>
         protected override void Initialize()
         {
+            
             var dte = GetService(typeof(DTE)) as DTE2;
 
             CleanBinAndObjCommand.Initialize(this, dte);
