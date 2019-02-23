@@ -1,14 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="CleanBinAndObj.1feecc71-ac82-4552-9efb-aaf691caa6ef" Version="1.0" Language="en-US" Publisher="Alexander Dobrynin" />
+        <Identity Id="5ea478a7-93f3-4cef-982f-0be41fea1173" Version="1.1.0" Language="en-US" Publisher="Alexander Dobrynin" />
         <DisplayName>CleanBinAndObj</DisplayName>
         <Description xml:space="preserve">Cleans all /bin and /obj directories in solution</Description>
         <MoreInfo>https://github.com/aldobrynin/CleanBinAndObj</MoreInfo>
+        <License>Resources\LICENSE</License>
+        <Icon>Resources\icon.png</Icon>
         <Tags>clean, cleanup, bin, obj</Tags>
     </Metadata>
     <Installation>
-        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[14.0,17.0)" />
+        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[14.0,)" />
     </Installation>
     <Dependencies>
     </Dependencies>
