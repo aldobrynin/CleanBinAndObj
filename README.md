@@ -4,7 +4,7 @@
 
 
 Download this extension from the [VS Gallery](https://marketplace.visualstudio.com/items?itemName=dobrynin.cleanbinandobj)
-or get the [CI build](http://vsixgallery.com/extension/CleanBinAndObj.1feecc71-ac82-4552-9efb-aaf691caa6ef/).
+or get the [CI build](http://vsixgallery.com/extension/5ea478a7-93f3-4cef-982f-0be41fea1173/).
 
 ---------------------------------------
 
