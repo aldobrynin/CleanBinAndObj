@@ -34,13 +34,12 @@ namespace CleanBinAndObj
         private static IVsOutputWindowPane _vsOutputWindowPane;
 
         private readonly DTE2 _dte;
+        private readonly Options _options;
 
         /// <summary>
         ///     VS Package that provides this command, not null.
         /// </summary>
         private readonly Package _package;
-
-        private readonly string[] _subdirectoriesToClean = {"bin", "obj"};
 
         private IVsStatusbar _bar;
 
@@ -50,10 +49,12 @@ namespace CleanBinAndObj
         /// </summary>
         /// <param name="package">Owner package, not null.</param>
         /// <param name="dte2"></param>
-        private CleanBinAndObjCommand(Package package, DTE2 dte2)
+        /// <param name="options"></param>
+        private CleanBinAndObjCommand(Package package, DTE2 dte2, Options options)
         {
             _package = package ?? throw new ArgumentNullException(nameof(package));
             _dte = dte2;
+            _options = options;
 
             if (ServiceProvider.GetService(typeof(IMenuCommandService)) is OleMenuCommandService commandService)
             {
@@ -90,9 +91,11 @@ namespace CleanBinAndObj
         /// </summary>
         /// <param name="package">Owner package, not null.</param>
         /// <param name="dte"></param>
-        public static void Initialize(Package package, DTE2 dte)
+        /// <param name="options">options object</param>
+        public static void Initialize(Package package, DTE2 dte, Options options)
         {
-            Instance = new CleanBinAndObjCommand(package, dte);
+            ThreadHelper.ThrowIfNotOnUIThread();
+            Instance = new CleanBinAndObjCommand(package, dte, options);
         }
 
         private void CleanBinAndObj(object sender, EventArgs e)
@@ -127,10 +130,11 @@ namespace CleanBinAndObj
         {
             if (directoryPath == null)
                 return;
-
+            if (_options.TargetSubdirectories == null || _options.TargetSubdirectories.Length == 0) 
+                return;
             try
             {
-                foreach (var di in _subdirectoriesToClean.Select(x => Path.Combine(directoryPath, x))
+                foreach (var di in _options.TargetSubdirectories.Select(x => Path.Combine(directoryPath, x))
                     .Where(Directory.Exists)
                     .Select(x => new DirectoryInfo(x)))
                 {
@@ -229,9 +233,6 @@ namespace CleanBinAndObj
             return File.Exists(fullPath) ? Path.GetDirectoryName(fullPath) : null;
         }
 
-        private void WriteToOutput(string message)
-        {
-            _vsOutputWindowPane.OutputString($"{DateTime.Now:HH:mm:ss.ffff}: {message}{Environment.NewLine}");
-        }
+        private void WriteToOutput(string message) => _vsOutputWindowPane.OutputString($"{DateTime.Now:HH:mm:ss.ffff}: {message}{Environment.NewLine}");
     }
 }
