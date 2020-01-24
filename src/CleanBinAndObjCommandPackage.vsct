@@ -11,6 +11,8 @@
         <CommandFlag>DynamicItemStart</CommandFlag>
         <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
+          <CommandName>CleanBinAndObj</CommandName>
+          <LocCanonicalName>CleanBinAndObj</LocCanonicalName>
           <ButtonText>Clean Bin and Obj</ButtonText>
         </Strings>
       </Button>
