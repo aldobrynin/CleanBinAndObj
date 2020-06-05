@@ -6,7 +6,7 @@
         public const string Name = "Clean Bin and Obj";
         public const string Description = @"Cleans all /bin and /obj directories in solution. ";
         public const string Language = "en-US";
-        public const string Version = "1.1.0";
+        public const string Version = "1.1.1";
         public const string Author = "Alexander Dobrynin";
         public const string Tags = "clean, cleanup, bin, obj";
     }
