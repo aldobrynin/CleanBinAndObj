@@ -18,6 +18,14 @@
       </Button>
     </Buttons>
   </Commands>
+  <CommandPlacements>
+    <CommandPlacement guid="guidCleanBinAndObjCommandPackageCmdSet" id="CleanBinAndObjCommandId" priority="0x0400">
+      <Parent guid="guidSHLMainMenu" id="IDG_VS_CTXT_PROJECT_BUILD" />
+    </CommandPlacement>
+    <CommandPlacement guid="guidCleanBinAndObjCommandPackageCmdSet" id="CleanBinAndObjCommandId" priority="0x0400">
+      <Parent guid="guidSHLMainMenu" id="IDG_VS_CTXT_SOLUTION_BUILD" />
+    </CommandPlacement>
+  </CommandPlacements>
   <VisibilityConstraints>
     <VisibilityItem guid="guidCleanBinAndObjCommandPackageCmdSet" id="CleanBinAndObjCommandId" context="UICONTEXT_SolutionExists"/>
   </VisibilityConstraints>

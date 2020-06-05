@@ -101,7 +101,7 @@ namespace CleanBinAndObj
         private void CleanBinAndObj(object sender, EventArgs e)
         {
             var sw = new Stopwatch();
-            var solutionProjects = GetAllProjects();
+            var solutionProjects = GetProjects();
             _vsOutputWindowPane.Clear();
             WriteToOutput($"Starting... Projects to clean: {solutionProjects.Length}");
             uint cookie = 0;
@@ -119,7 +119,7 @@ namespace CleanBinAndObj
             }
 
             sw.Stop();
-            WriteToOutput($@"Finished. Process took {sw.Elapsed:mm\:ss\.ffff}");
+            WriteToOutput($@"Finished. Elapsed: {sw.Elapsed:mm\:ss\.ffff}");
             // Clear the progress bar.
             StatusBar.Progress(ref cookie, 0, string.Empty, 0, 0);
             StatusBar.FreezeOutput(0);
@@ -155,15 +155,28 @@ namespace CleanBinAndObj
             }
         }
 
-        private Project[] GetAllProjects()
+        private Project[] GetProjects()
         {
-            return _dte.Solution.Projects
-                .Cast<Project>()
+            var projects = GetActiveProjects(_dte) ?? _dte.Solution.Projects.Cast<Project>().ToArray();
+            return projects
                 .SelectMany(GetChildProjects)
-                .Union(_dte.Solution.Projects.Cast<Project>())
+                .Union(projects)
                 .Where(ProjectFullNameNotEmpty)
                 .OrderBy(x => x.UniqueName)
                 .ToArray();
+        }
+
+        private static Project[] GetActiveProjects(DTE2 dte) {
+            try {
+                if (dte.ActiveSolutionProjects is Array activeSolutionProjects && activeSolutionProjects.Length > 0)
+                {
+                    return activeSolutionProjects.Cast<Project>().ToArray();
+                }
+            } catch (Exception ex) {
+                Debug.Write(ex.Message);
+            }
+
+            return null;
         }
 
         private static bool ProjectFullNameNotEmpty(Project p)
