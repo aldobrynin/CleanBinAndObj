@@ -157,7 +157,7 @@ namespace CleanBinAndObj
 
         private Project[] GetProjects()
         {
-            var projects = GetActiveProjects(_dte) ?? _dte.Solution.Projects.Cast<Project>().ToArray();
+            var projects = _dte.Solution.Projects.Cast<Project>().ToArray();
             return projects
                 .SelectMany(GetChildProjects)
                 .Union(projects)
