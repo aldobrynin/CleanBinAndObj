@@ -52,6 +52,7 @@ namespace CleanBinAndObj
         /// <param name="options"></param>
         private CleanBinAndObjCommand(Package package, DTE2 dte2, Options options)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             _package = package ?? throw new ArgumentNullException(nameof(package));
             _dte = dte2;
             _options = options;
@@ -59,7 +60,7 @@ namespace CleanBinAndObj
             if (ServiceProvider.GetService(typeof(IMenuCommandService)) is OleMenuCommandService commandService)
             {
                 var menuCommandId = new CommandID(CommandSet, CommandId);
-                var menuItem = new MenuCommand(CleanBinAndObj, menuCommandId);
+                var menuItem = new OleMenuCommand(CleanBinAndObj, menuCommandId);
                 commandService.AddCommand(menuItem);
 
                 var outWindow = (IVsOutputWindow) Package.GetGlobalService(typeof(SVsOutputWindow));
@@ -246,6 +247,9 @@ namespace CleanBinAndObj
             return File.Exists(fullPath) ? Path.GetDirectoryName(fullPath) : null;
         }
 
-        private void WriteToOutput(string message) => _vsOutputWindowPane.OutputString($"{DateTime.Now:HH:mm:ss.ffff}: {message}{Environment.NewLine}");
+        private void WriteToOutput(string message)
+        {
+            _vsOutputWindowPane.OutputStringThreadSafe($"{DateTime.Now:HH:mm:ss.ffff}: {message}{Environment.NewLine}");
+        }
     }
 }
