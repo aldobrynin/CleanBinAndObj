@@ -1,4 +1,7 @@
+version: 1.0.{build}
 image: Visual Studio 2019
+artifacts:
+- path: src\bin\Release\CleanBinAndObj.vsix
 
 install:
 - ps: (new-object Net.WebClient).DownloadString("https://raw.github.com/madskristensen/ExtensionScripts/master/AppVeyor/vsix.ps1") | iex
@@ -13,3 +16,11 @@ build_script:
 
 after_test:
   - ps: Vsix-PushArtifacts | Vsix-PublishToGallery
+
+deploy:
+- provider: GitHub
+  auth_token:
+    secure: XGWMtxsKszu9tHMWO0eFisdiKjo3oiRiGqQI8pOvCSmHVWdpvffd2IeeetUbxofv
+  artifact: CleanBinAndObj.vsix
+  on:
+    branch: master
