@@ -1,6 +1,4 @@
-﻿using EnvDTE;
-using EnvDTE80;
-using Microsoft.VisualStudio.Shell;
+﻿using Microsoft.VisualStudio.Shell;
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -18,11 +16,7 @@ namespace CleanBinAndObj
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
             await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
-
-            var dte = await GetServiceAsync(typeof(DTE)) as DTE2;
-            var options = (Options)GetDialogPage(typeof(Options));
-
-            CleanBinAndObjCommand.Initialize(this, dte, options);
+            await CleanBinAndObjCommand.InitializeAsync(this);
         }
     }
 }

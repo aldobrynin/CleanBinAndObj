@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio;
@@ -93,9 +94,11 @@ namespace CleanBinAndObj
         /// <param name="package">Owner package, not null.</param>
         /// <param name="dte"></param>
         /// <param name="options">options object</param>
-        public static void Initialize(Package package, DTE2 dte, Options options)
+        public static async Task InitializeAsync(AsyncPackage package)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            var dte = await package.GetServiceAsync<DTE, DTE2>();
+            var options = (Options)package.GetDialogPage(typeof(Options));
             Instance = new CleanBinAndObjCommand(package, dte, options);
         }
 
