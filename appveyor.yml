@@ -20,7 +20,7 @@ after_test:
 deploy:
 - provider: GitHub
   auth_token:
-    secure: XGWMtxsKszu9tHMWO0eFisdiKjo3oiRiGqQI8pOvCSmHVWdpvffd2IeeetUbxofv
+    secure: jPu9PMkzkclowFXqi+0WXbiwLABp/TfO3hKspIFfZwiLLlPlHIh/vrlZRFA8E5nr
   artifact: CleanBinAndObj.vsix
   on:
     branch: master
