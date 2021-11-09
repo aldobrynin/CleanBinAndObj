@@ -152,6 +152,7 @@ namespace CleanBinAndObj
             }
             catch (Exception e)
             {
+                WriteToOutput($"Error while cleaning directory {directoryPath}: {e.Message}");
                 Debug.WriteLine(e);
             }
         }
