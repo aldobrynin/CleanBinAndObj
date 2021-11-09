@@ -12,6 +12,10 @@ download in the
 These are the changes to each version that has been released
 on the official Visual Studio extension gallery.
 
+## 1.2.0
+- [x] Visual Studio 2022 support
+- Log errors during cleanup process to build output (e.g. file was locked)
+
 
 ## 1.0
 
