@@ -115,7 +115,7 @@ namespace CleanBinAndObj
             {
                 var project = solutionProjects[index];
                 var projectRootPath = GetProjectRootFolder(project);
-                var message = $"Cleaning {project.UniqueName}";
+                var message = $"Cleaning {project.Name}";
                 WriteToOutput(message);
                 StatusBar.Progress(ref cookie, 1, string.Empty, index, (uint) solutionProjects.Length);
                 StatusBar.SetText(message);
@@ -145,11 +145,13 @@ namespace CleanBinAndObj
                     foreach (var file in di.EnumerateFiles())
                     {
                         file.Delete();
+                        WriteToOutput($"Cleaned {file.FullName}");
                     }
 
                     foreach (var dir in di.EnumerateDirectories())
                     {
                         dir.Delete(true);
+                        WriteToOutput($"Cleaned {dir.FullName}");
                     }
                 }
             }
@@ -203,7 +205,7 @@ namespace CleanBinAndObj
                 if (parent.Kind != ProjectKinds.vsProjectKindSolutionFolder && parent.Collection == null) // Unloaded
                     return Enumerable.Empty<Project>();
 
-                if (string.IsNullOrEmpty(parent.FullName) == false)
+                if (!string.IsNullOrEmpty(parent.FullName))
                     return Enumerable.Repeat(parent, 1);
             }
             catch (COMException)
